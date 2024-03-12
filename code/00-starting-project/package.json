@@ -1,18 +1,15 @@
 {
-  "name": "web-dev-complete-guide",
+  "name": "academindshop",
   "version": "1.0.0",
-  "description": "",
+  "description": "E-commerce shop build with NodeJS and ExpressJS",
   "main": "index.js",
   "scripts": {
     "start": "nodemon app.js"
   },
-  "keywords": [],
-  "author": "Maximilian Schwarzmüller",
+  "author": "Compil3",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.12"
+    "express": "^4.18.3",
+    "nodemon": "^3.1.0"
   }
 }
