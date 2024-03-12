@@ -11,7 +11,13 @@ const authController = require("../controllers/auth.controller");
 // };
 // router.use(timeLog);
 
+// go to signup form
 router.get("/signup", authController.getSignup);
+
+// create new user
+router.post("/signup", authController.signup);
+
+// login user
 router.get("/login", authController.getLogin);
 
 // define the about route
