@@ -29,6 +29,8 @@ class User {
 
   async getUserByEmail() {
     // search user in DB based on email
+    // apparently MySQL execute method always returns an array
+    // need to use result[0], even though email is unique
     const [result] = await db.execute(
       `SELECT * FROM users WHERE email = (?) LIMIT 1`,
       [this.email]
