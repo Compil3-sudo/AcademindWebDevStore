@@ -7,7 +7,7 @@ function getSignup(req, res) {
 }
 
 // create user
-async function signup(req, res) {
+async function signup(req, res, next) {
   // connect to DB - create new user
   const userData = [
     req.body.email,
@@ -21,7 +21,12 @@ async function signup(req, res) {
 
   const newUser = new User(...userData);
 
-  await newUser.signup();
+  try {
+    await newUser.signup();
+  } catch (error) {
+    next(error);
+    return;
+  }
 
   res.redirect("/login");
 }
@@ -32,7 +37,13 @@ function getLogin(req, res) {
 
 async function login(req, res) {
   const user = new User(req.body.email, req.body.password);
-  const existingUser = await user.getUserByEmail();
+  let existingUser;
+  try {
+    existingUser = await user.getUserByEmail();
+  } catch (error) {
+    next(error);
+    return;
+  }
 
   if (!existingUser) {
     res.redirect("/login");
