@@ -1,9 +1,9 @@
-const bcrypt = require("bcryptjs");
-const db = require("../data/database");
+const bcrypt = require('bcryptjs');
+const db = require('../data/database');
 
 async function insertAddress(street, postalCode, city) {
   const query =
-    "INSERT INTO addresses (street, postalCode, city) VALUES (?, ?, ?)";
+    'INSERT INTO addresses (street, postalCode, city) VALUES (?, ?, ?)';
   const values = [street, postalCode, city];
 
   try {
@@ -39,6 +39,16 @@ class User {
     return result[0];
   }
 
+  async existsAlready() {
+    const existingUser = await this.getUserByEmail();
+
+    if (existingUser) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   async signup() {
     // insert address into address table
     const addressResult = await insertAddress(
@@ -48,20 +58,20 @@ class User {
     );
 
     if (!addressResult) {
-      console.log("Could not insert address into database.");
+      console.log('Could not insert address into database.');
       return;
     } else {
       // encrypt user's password with bcrypt
       // insert user with address into users table
       const query =
-        "INSERT INTO users (email, password, fullname, addressId) VALUES (?, ?, ?, ?)";
+        'INSERT INTO users (email, password, fullname, addressId) VALUES (?, ?, ?, ?)';
 
-      console.log("first");
+      console.log('first');
 
       const hashedPassword = await bcrypt.hash(this.password, 12);
 
       const values = [this.email, hashedPassword, this.fullname, addressResult];
-      console.log("second");
+      console.log('second');
 
       try {
         await db.execute(query, values);
