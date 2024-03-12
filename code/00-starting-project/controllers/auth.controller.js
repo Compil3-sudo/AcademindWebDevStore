@@ -1,15 +1,40 @@
 const User = require('../models/user.model');
 const authUtil = require('../util/authentication');
 const validation = require('../util/validation');
+const sessionFlash = require('../util/session-flash');
 
 // render signup form view
 function getSignup(req, res) {
-  res.render('customer/auth/signup');
+  let sessionData = sessionFlash.getSessionData(req);
+  console.log(sessionData);
+  if (!sessionData) {
+    sessionData = {
+      email: '',
+      confirmEmail: '',
+      password: '',
+      fullname: '',
+      street: '',
+      postal: '',
+      city: '',
+    };
+  }
+
+  res.render('customer/auth/signup', { inputData: sessionData });
 }
 
 // create user
 async function signup(req, res, next) {
   // connect to DB - create new user
+  const userInputData = {
+    email: req.body.email,
+    confirmEmail: req.body['confirm-email'],
+    password: req.body.password,
+    fullname: req.body.fullname,
+    street: req.body.street,
+    postal: req.body.postal,
+    city: req.body.city,
+  };
+
   const userData = [
     req.body.email,
     req.body.password,
@@ -23,7 +48,17 @@ async function signup(req, res, next) {
     !validation.userDetailsAreValid(...userData) ||
     !validation.emailIsConfirmed(req.body.email, req.body['confirm-email'])
   ) {
-    res.redirect('/signup');
+    sessionFlash.flashDataToSession(
+      req,
+      {
+        errorMessage:
+          'Please check your input. Password must be at least 6 characters long and postal code must be 5.',
+        ...userInputData,
+      },
+      function () {
+        res.redirect('/signup');
+      }
+    );
     return;
   }
 
@@ -33,7 +68,16 @@ async function signup(req, res, next) {
     const existsAlready = await newUser.existsAlready();
 
     if (existsAlready) {
-      res.redirect('/signup');
+      sessionFlash.flashDataToSession(
+        req,
+        {
+          errorMessage: 'user already exists',
+          ...userInputData,
+        },
+        () => {
+          res.redirect('/signup');
+        }
+      );
       return;
     }
 
@@ -47,7 +91,16 @@ async function signup(req, res, next) {
 }
 
 function getLogin(req, res) {
-  res.render('customer/auth/login');
+  let sessionData = sessionFlash.getSessionData(req);
+
+  if (!sessionData) {
+    sessionData = {
+      email: '',
+      password: '',
+    };
+  }
+
+  res.render('customer/auth/login', { inputData: sessionData });
 }
 
 async function login(req, res) {
@@ -61,7 +114,17 @@ async function login(req, res) {
   }
 
   if (!existingUser) {
-    res.redirect('/login');
+    sessionFlash.flashDataToSession(
+      req,
+      {
+        errorMessage: 'Invalid credentials. check email and pass',
+        email: user.email,
+        password: user.password,
+      },
+      () => {
+        res.redirect('/login');
+      }
+    );
     return;
   }
 
@@ -70,7 +133,17 @@ async function login(req, res) {
   );
 
   if (!passwordIsCorrect) {
-    res.redirect('/login');
+    sessionFlash.flashDataToSession(
+      req,
+      {
+        errorMessage: 'Invalid credentials. check email and pass',
+        email: user.email,
+        password: user.password,
+      },
+      () => {
+        res.redirect('/login');
+      }
+    );
     return;
   }
 
