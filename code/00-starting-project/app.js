@@ -9,6 +9,10 @@ app.use(express.static("public"));
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
+const authRoutes = require("./routes/auth.routes");
+
+app.use(authRoutes);
+
 app.get("/", (req, res) => {
   res.render("index");
 });
