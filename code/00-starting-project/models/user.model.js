@@ -6,15 +6,10 @@ async function insertAddress(street, postalCode, city) {
     "INSERT INTO addresses (street, postalCode, city) VALUES (?, ?, ?)";
   const values = [street, postalCode, city];
 
-  console.log("Trying to insert address: ", ...values);
-
   try {
-    const result = await db.execute(query, values);
-    console.log("IMPORTANT");
-    console.log(result);
-    return 1;
+    const [result] = await db.execute(query, values);
+    return result.insertId;
   } catch (error) {
-    console.log("ERROR");
     console.log(error);
     return 0;
   }
@@ -47,20 +42,19 @@ class User {
       // encrypt user's password with bcrypt
       // insert user with address into users table
       const query =
-        "INSERT INTO users (email, password, fullname, addressId) VALUES ?";
+        "INSERT INTO users (email, password, fullname, addressId) VALUES (?, ?, ?, ?)";
 
       const hashedPassword = await bcrypt.hash(this.password, 12);
 
       const values = [this.email, hashedPassword, this.fullname, addressResult];
-      console.log(values);
-      // try {
-      //   const result = await db.execute(query, values);
-      //   console.log(result);
-      //   return 1;
-      // } catch (error) {
-      //   console.log(error);
-      //   return 0;
-      // }
+
+      try {
+        await db.execute(query, values);
+        return 1;
+      } catch (error) {
+        console.log(error);
+        return 0;
+      }
     }
   }
 }
