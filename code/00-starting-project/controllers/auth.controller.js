@@ -20,8 +20,6 @@ async function signup(req, res) {
 
   const newUser = new User(...userData);
 
-  console.log(newUser);
-
   await newUser.signup();
 
   res.redirect("/login");

@@ -1,6 +1,16 @@
 const express = require("express");
 const path = require("path");
 const db = require("./data/database");
+const csrf = require("csurf");
+
+// Middlewares
+const addCsrfTokenMiddleware = require("./middlewares/csrf");
+const errorHandlerMiddleware = require("./middlewares/error-handler");
+
+// session
+const expressSession = require("express-session");
+const createSessionConfig = require("./config/session");
+const sessionConfig = createSessionConfig();
 
 const app = express();
 const port = 3000;
@@ -13,7 +23,11 @@ app.set("view engine", "ejs");
 
 const authRoutes = require("./routes/auth.routes");
 
+app.use(expressSession(sessionConfig));
+app.use(csrf());
+app.use(addCsrfTokenMiddleware); // this distributes generated tokens to all other middleware / route handlers and views
 app.use(authRoutes);
+app.use(errorHandlerMiddleware);
 
 app.get("/", (req, res) => {
   res.render("customer/auth/signup");
