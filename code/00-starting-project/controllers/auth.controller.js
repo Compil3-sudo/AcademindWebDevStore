@@ -24,8 +24,7 @@ async function signup(req, res) {
 
   await newUser.signup();
 
-  // res.redirect("/login");
-  res.redirect("/");
+  res.redirect("/login");
 }
 
 function getLogin(req, res) {
