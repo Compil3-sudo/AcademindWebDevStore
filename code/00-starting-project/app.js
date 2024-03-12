@@ -6,6 +6,7 @@ const csrf = require("csurf");
 // Middlewares
 const addCsrfTokenMiddleware = require("./middlewares/csrf");
 const errorHandlerMiddleware = require("./middlewares/error-handler");
+const checkAuthStatusMiddleware = require("./middlewares/check-auth");
 
 // session
 const expressSession = require("express-session");
@@ -22,16 +23,19 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 const authRoutes = require("./routes/auth.routes");
+const productsRoutes = require("./routes/products.routes");
+const baseRoutes = require("./routes/base.routes");
 
 app.use(expressSession(sessionConfig));
 app.use(csrf());
 app.use(addCsrfTokenMiddleware); // this distributes generated tokens to all other middleware / route handlers and views
-app.use(authRoutes);
-app.use(errorHandlerMiddleware);
+app.use(checkAuthStatusMiddleware);
 
-app.get("/", (req, res) => {
-  res.render("customer/auth/signup");
-});
+app.use(baseRoutes);
+app.use(authRoutes);
+app.use(productsRoutes);
+
+app.use(errorHandlerMiddleware);
 
 db.getConnection()
   .then((connection) => {

@@ -27,6 +27,16 @@ class User {
     };
   }
 
+  async getUserByEmail() {
+    // search user in DB based on email
+    const [result] = await db.execute(
+      `SELECT * FROM users WHERE email = (?) LIMIT 1`,
+      [this.email]
+    );
+
+    return result[0];
+  }
+
   async signup() {
     // insert address into address table
     const addressResult = await insertAddress(
@@ -44,9 +54,12 @@ class User {
       const query =
         "INSERT INTO users (email, password, fullname, addressId) VALUES (?, ?, ?, ?)";
 
+      console.log("first");
+
       const hashedPassword = await bcrypt.hash(this.password, 12);
 
       const values = [this.email, hashedPassword, this.fullname, addressResult];
+      console.log("second");
 
       try {
         await db.execute(query, values);
@@ -56,6 +69,10 @@ class User {
         return 0;
       }
     }
+  }
+
+  hasMatchingPassword(hashedPassword) {
+    return bcrypt.compare(this.password, hashedPassword);
   }
 }
 
