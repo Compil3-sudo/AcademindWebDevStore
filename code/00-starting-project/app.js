@@ -14,7 +14,7 @@ const authRoutes = require("./routes/auth.routes");
 app.use(authRoutes);
 
 app.get("/", (req, res) => {
-  res.render("index");
+  res.render("customer/auth/signup");
 });
 
 app.listen(port);
