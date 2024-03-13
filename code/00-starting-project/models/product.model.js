@@ -10,8 +10,21 @@ class Product {
     this.imagePath = `product-data/images/${productData.image}`;
     this.imageUrl = `/products/assets/images/${productData.image}`;
     if (productData.id) {
-      this.id = productData.id.toString(); // string or int ?
+      this.id = productData.id; // string or int ?
     }
+  }
+
+  static async findById(productId) {
+    const [product] = await db.query(`SELECT * FROM products WHERE id = (?)`, [
+      productId,
+    ]);
+
+    if (!product) {
+      const error = new Error('Could not find product with provided id.');
+      error.code = 404;
+      throw error;
+    }
+    return product[0];
   }
 
   static async findAll() {
