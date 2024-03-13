@@ -20,7 +20,7 @@ class Product {
       productId,
     ]);
 
-    if (!product) {
+    if (!product[0]) {
       const error = new Error('Could not find product with provided id.');
       error.code = 404;
       throw error;
