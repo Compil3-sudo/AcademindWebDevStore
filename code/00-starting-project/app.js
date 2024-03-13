@@ -8,6 +8,7 @@ const addCsrfTokenMiddleware = require('./middlewares/csrf');
 const errorHandlerMiddleware = require('./middlewares/error-handler');
 const checkAuthStatusMiddleware = require('./middlewares/check-auth');
 const protectRoutesMiddleware = require('./middlewares/protect-routes');
+const cartMiddleware = require('./middlewares/cart');
 
 // session
 const expressSession = require('express-session');
@@ -20,6 +21,7 @@ const port = 3000;
 app.use(express.static('public'));
 app.use('/products/assets', express.static('product-data'));
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -29,15 +31,18 @@ const authRoutes = require('./routes/auth.routes');
 const productsRoutes = require('./routes/products.routes');
 const baseRoutes = require('./routes/base.routes');
 const adminRoutes = require('./routes/admin.routes');
+const cartRoutes = require('./routes/cart.routes');
 
 app.use(expressSession(sessionConfig));
 app.use(csrf());
 app.use(addCsrfTokenMiddleware); // this distributes generated tokens to all other middleware / route handlers and views
 app.use(checkAuthStatusMiddleware);
+app.use(cartMiddleware);
 
 app.use(baseRoutes);
 app.use(authRoutes);
 app.use(productsRoutes);
+app.use('/cart', cartRoutes);
 app.use(protectRoutesMiddleware);
 app.use('/admin', adminRoutes);
 
