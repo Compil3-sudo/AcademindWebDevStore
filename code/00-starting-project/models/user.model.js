@@ -66,12 +66,9 @@ class User {
       const query =
         'INSERT INTO users (email, password, fullname, addressId) VALUES (?, ?, ?, ?)';
 
-      console.log('first');
-
       const hashedPassword = await bcrypt.hash(this.password, 12);
 
       const values = [this.email, hashedPassword, this.fullname, addressResult];
-      console.log('second');
 
       try {
         await db.execute(query, values);
