@@ -9,8 +9,8 @@
     <section>
       <h2>Manage Products</h2>
       <p>
-        <a href="/admin/products/new" class="btn">Add Product
-
+        <a href="/admin/products/new" class="btn">
+          Add Product
         </a>
       </p>
     </section>
@@ -18,7 +18,7 @@
       <ul id="products-grid">
         <% for (const product of products) { %>
         <li>
-          <%- include('./includes/product-item', {product: product}) %>
+          <%- include('../../shared/includes/product-item', {product: product}) %>
         </li>
         <% } %>
       </ul>
