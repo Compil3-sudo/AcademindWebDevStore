@@ -38,9 +38,6 @@ async function getUpdateProduct(req, res, next) {
 
 async function updateProduct(req, res, next) {
   const product = new Product({ ...req.body, id: req.params.id });
-  console.log('UPDATE PRODUCT POST METHOD');
-  console.log(req.body);
-  console.log(product);
 
   if (req.file) {
     product.replaceImage(req.file.filename);
@@ -56,10 +53,22 @@ async function updateProduct(req, res, next) {
   res.redirect('/admin/products');
 }
 
+async function deleteProduct(req, res, next) {
+  let product;
+  try {
+    product = await Product.findById(req.params.id);
+    await product.remove();
+  } catch (error) {
+    next(error);
+  }
+  res.json({ message: 'Deleted product' });
+}
+
 module.exports = {
   getProducts: getProducts,
   getNewProduct: getNewProduct,
   createNewProduct: createNewProduct,
   getUpdateProduct: getUpdateProduct,
   updateProduct: updateProduct,
+  deleteProduct: deleteProduct,
 };

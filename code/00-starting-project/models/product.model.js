@@ -25,7 +25,7 @@ class Product {
       error.code = 404;
       throw error;
     }
-    return product[0];
+    return new Product(product[0]);
   }
 
   static async findAll() {
@@ -89,6 +89,10 @@ class Product {
   async replaceImage(newImage) {
     this.image = newImage;
     this.updateImageData();
+  }
+
+  async remove() {
+    return await db.query(`DELETE FROM products WHERE id = (?)`, [this.id]);
   }
 }
 
