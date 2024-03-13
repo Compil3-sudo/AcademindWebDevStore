@@ -12,18 +12,17 @@ class Cart {
       totalPrice: product.price,
     };
 
-    const existingProductIndex = this.items.findIndex(
-      (item) => item.id === product.id
-    );
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      if (item.product.id === product.id) {
+        cartItem.quantity = item.quantity + 1;
+        cartItem.totalPrice = item.totalPrice + product.price;
+        this.items[i] = cartItem;
 
-    if (existingProductIndex) {
-      cartItem.quantity++;
-      cartItem.totalPrice += product.price;
-      this.items[existingProductIndex] = cartItem;
-
-      this.totalQuantity++;
-      this.totalPrice += product.price;
-      return;
+        this.totalQuantity++;
+        this.totalPrice += product.price;
+        return;
+      }
     }
 
     this.totalQuantity++;
