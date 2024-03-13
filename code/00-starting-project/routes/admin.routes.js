@@ -18,7 +18,8 @@ router.get('/products/:id', adminController.getUpdateProduct);
 
 router.post(
   '/products/:id',
-  imageUploadMiddleware,
+  imageUploadMiddleware, // without this the productData is undefined or NaN
+  // this is required because of the multiform submission (text data AND image file)
   adminController.updateProduct
 );
 
