@@ -7,10 +7,11 @@ class Product {
     this.price = +productData.price;
     this.description = productData.description;
     this.image = productData.image; // name of the image file
-    this.imagePath = `product-data/images/${productData.image}`;
-    this.imageUrl = `/products/assets/images/${productData.image}`;
+
+    this.updateImageData();
+
     if (productData.id) {
-      this.id = productData.id; // string or int ?
+      this.id = productData.id;
     }
   }
 
@@ -36,6 +37,11 @@ class Product {
     });
   }
 
+  updateImageData() {
+    this.imagePath = `product-data/images/${this.image}`;
+    this.imageUrl = `/products/assets/images/${this.image}`;
+  }
+
   async save() {
     const productData = [
       this.title,
@@ -45,14 +51,44 @@ class Product {
       this.image,
     ];
 
-    const query = `INSERT INTO products (title, summary, price, description, image) VALUES (?, ?, ?, ?, ?)`;
+    if (this.id) {
+      let query;
 
-    try {
+      if (!this.image) {
+        query = `
+          UPDATE products
+          SET title = (?),
+              summary = (?),
+              price = (?),
+              description = (?)
+          WHERE id = (?);
+          `;
+        productData.pop(); // remove the image. it stays the same
+      } else {
+        query = `
+        UPDATE products
+        SET title = (?),
+            summary = (?),
+            price = (?),
+            description = (?),
+            image = (?)
+        WHERE id = (?);
+        `;
+      }
+
+      productData.push(this.id); // productData did not contain the id, needed for MySQL
+
       await db.execute(query, productData);
-    } catch (error) {
-      console.log(error);
-      return;
+    } else {
+      const query = `INSERT INTO products (title, summary, price, description, image) VALUES (?, ?, ?, ?, ?)`;
+
+      await db.execute(query, productData);
     }
+  }
+
+  async replaceImage(newImage) {
+    this.image = newImage;
+    this.updateImageData();
   }
 }
 
