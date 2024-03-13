@@ -6,7 +6,7 @@ const sessionFlash = require('../util/session-flash');
 // render signup form view
 function getSignup(req, res) {
   let sessionData = sessionFlash.getSessionData(req);
-  console.log(sessionData);
+
   if (!sessionData) {
     sessionData = {
       email: '',

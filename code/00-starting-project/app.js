@@ -7,6 +7,7 @@ const csrf = require('csurf');
 const addCsrfTokenMiddleware = require('./middlewares/csrf');
 const errorHandlerMiddleware = require('./middlewares/error-handler');
 const checkAuthStatusMiddleware = require('./middlewares/check-auth');
+const protectRoutesMiddleware = require('./middlewares/protect-routes');
 
 // session
 const expressSession = require('express-session');
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+// routes
 const authRoutes = require('./routes/auth.routes');
 const productsRoutes = require('./routes/products.routes');
 const baseRoutes = require('./routes/base.routes');
@@ -36,6 +38,7 @@ app.use(checkAuthStatusMiddleware);
 app.use(baseRoutes);
 app.use(authRoutes);
 app.use(productsRoutes);
+app.use(protectRoutesMiddleware);
 app.use('/admin', adminRoutes);
 
 app.use(errorHandlerMiddleware);
