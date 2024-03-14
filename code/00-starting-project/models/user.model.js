@@ -29,11 +29,12 @@ class User {
 
   static async findById(userId) {
     const query = `
-      SELECT (email, fullname, addressId) 
+      SELECT email, fullname, addressId
       FROM users 
       WHERE id = (?) LIMIT 1`;
-    const [result] = await db.execute(query, [userId]);
-    return result[0];
+    const [result] = await db.execute(query, [+userId]); // convert userId from string to INT
+    const user = { ...result[0], id: userId }; // need userId in orders table
+    return user;
   }
 
   async getUserByEmail() {

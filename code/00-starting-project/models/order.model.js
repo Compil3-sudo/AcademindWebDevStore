@@ -22,14 +22,44 @@ class Order {
     if (this.id) {
       // Updating
     } else {
-      const order = {
-        userData: this.userData,
-        productData: this.productData,
-        date: new Date(),
-        status: this.status,
-      };
+      const orderCart = this.productData;
+      const orderCartItems = orderCart.items;
 
-      await db.execute('INSERT INTO orders () VALUES (?)', [order]);
+      const order = [
+        this.userData.id,
+        new Date(),
+        this.status,
+        orderCart.totalQuantity,
+        orderCart.totalPrice,
+      ];
+
+      console.log('ORDER: ', order);
+      const [orderResult] = await db.execute(
+        'INSERT INTO orders (userId, date, status, total_quantity, total_price) VALUES (?, ?, ?, ?, ?)',
+        order
+      );
+      const orderId = orderResult.insertId;
+
+      console.log('ORDER RESULT: ', orderResult);
+      console.log('orderCartItems: ', orderCartItems);
+
+      for (const item of orderCartItems) {
+        // add each product from cart to the order_product table
+        const orderProduct = [
+          orderId,
+          item.product.id,
+          item.quantity,
+          item.product.price,
+          item.totalPrice,
+        ];
+
+        const [orderProductResult] = await db.execute(
+          'INSERT INTO order_product (orderId, productId, quantity, single_price, total_price) VALUES (?, ?, ?, ?, ?)',
+          orderProduct
+        );
+
+        console.log('orderProductResult: ', orderProductResult);
+      }
     }
   }
 }
