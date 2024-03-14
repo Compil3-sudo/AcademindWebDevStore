@@ -143,7 +143,10 @@ class Order {
   static async findById(orderId) {
     const query = `SELECT * FROM orders WHERE id = (?) LIMIT 1`;
     const [order] = await db.execute(query, [+orderId]);
-    return this.transformOrders(order[0]);
+    // order is an array with only 1 order, because only 1 order can exist with that id
+    // however transformOrders needs an array to map => send array
+    const transformedOrder = await this.transformOrders(order); // returns array with 1 element
+    return transformedOrder[0]; // send back only the order
   }
 
   async save() {
