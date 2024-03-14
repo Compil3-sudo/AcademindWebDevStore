@@ -16,9 +16,10 @@ class Product {
   }
 
   static async findById(productId) {
-    const [product] = await db.query(`SELECT * FROM products WHERE id = (?)`, [
-      productId,
-    ]);
+    const [product] = await db.query(
+      `SELECT * FROM products WHERE id = (?) LIMIT 1`,
+      [productId]
+    );
 
     if (!product[0]) {
       const error = new Error('Could not find product with provided id.');
@@ -34,6 +35,22 @@ class Product {
 
     return products.map((product) => {
       return new Product(product);
+    });
+  }
+
+  static async findMultiple(ids) {
+    // get all products from MySQL products table
+    // where the id is in the array of ids
+    if (ids.length === 0) {
+      return [];
+    }
+    const placeholders = ids.map(() => '?').join(',');
+    const query = `SELECT * FROM products WHERE id IN (${placeholders})`;
+
+    const [products] = await db.execute(query, ids);
+
+    return products.map(function (productDocument) {
+      return new Product(productDocument);
     });
   }
 
