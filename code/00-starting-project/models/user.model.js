@@ -27,6 +27,15 @@ class User {
     };
   }
 
+  static async findById(userId) {
+    const query = `
+      SELECT (email, fullname, addressId) 
+      FROM users 
+      WHERE id = (?) LIMIT 1`;
+    const [result] = await db.execute(query, [userId]);
+    return result[0];
+  }
+
   async getUserByEmail() {
     // search user in DB based on email
     // apparently MySQL execute method always returns an array
