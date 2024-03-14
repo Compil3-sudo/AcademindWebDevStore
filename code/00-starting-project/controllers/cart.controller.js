@@ -26,7 +26,7 @@ async function updateCartItem(req, res) {
   const cart = res.locals.cart;
 
   const updatedItemData = cart.updateItem(
-    req.body.productId,
+    +req.body.productId, // convert string to int because id is stored as INT in MySQL DB
     +req.body.quantity
   );
 
