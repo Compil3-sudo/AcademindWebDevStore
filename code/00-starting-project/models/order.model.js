@@ -65,12 +65,7 @@ class Order {
     const cartItems = [];
 
     for (const orderProduct of orderProducts) {
-      const [cartProduct] = await db.execute(
-        `SELECT * FROM products WHERE id = (?) LIMIT 1`,
-        [orderProduct.productId]
-      );
-      // convert cartProduct into object from class Product
-      const product = new Product(cartProduct[0]);
+      const product = await Product.findById(orderProduct.productId);
 
       const cartItem = {
         product,
