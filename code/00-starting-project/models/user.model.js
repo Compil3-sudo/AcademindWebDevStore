@@ -33,7 +33,7 @@ class User {
       FROM users 
       WHERE id = (?) LIMIT 1`;
     const [result] = await db.execute(query, [+userId]); // convert userId from string to INT
-    const user = { ...result[0], id: userId }; // need userId in orders table
+    const user = { ...result[0], id: userId }; // need userId in orders table. // MySQL only returns arrays => array[0]
     return user;
   }
 
