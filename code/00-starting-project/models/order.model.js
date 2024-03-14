@@ -1,6 +1,5 @@
 const db = require('../data/database');
 const Product = require('./product.model');
-const User = require('./user.model');
 
 class Order {
   // Status => pending, fulfilled, cancelled
@@ -21,7 +20,7 @@ class Order {
   }
 
   static async transformOrderClass(order) {
-    // MySQL order Schema (What I receive):
+    // MySQL orders Schema (What I receive):
     // order.id
     // order.userId
     // order.date
@@ -29,10 +28,9 @@ class Order {
     // order.total_quantity (total quantity of all the cart items)
     // order.total_price (total price of all the cart items)
 
-    // userDATA SCHEMA:
+    // user data, which I need:
     // userdata = {
     //   email,
-    //   password, // not needed
     //   name,
     //   address: {
     //     street,
@@ -40,41 +38,51 @@ class Order {
     //     city,
     //   },
     // };
-    const user = await User.findById(order.userId);
-    const [address] = await db.execute(
-      `SELECT * FROM addresses WHERE id = (?) LIMIT 1`,
-      [user.addressId]
-    );
+    const userDataQuery = `
+      SELECT user.email, user.fullname AS name, address.*
+      FROM users user
+      JOIN addresses address ON user.addressId = address.id
+      WHERE user.id = (?)
+      LIMIT 1
+    `;
+    const [userData] = await db.execute(userDataQuery, [order.userId]);
 
-    const userData = {
-      email: user.email,
-      name: user.fullname,
-      address: address[0], // MySQL only returns arrays => array[0]
+    const userAddressData = {
+      email: userData[0].email,
+      name: userData[0].name,
+      address: {
+        street: userData[0].street,
+        postalCode: userData[0].postalCode,
+        city: userData[0].city,
+      },
     };
 
-    // orderProduct schema:
+    // order_product MySQL schema:
     // id
     // orderId
     // productId
     // quantity (quantity of a product from the cart)
     // single_price
     // total_price (single_price * quantity)
-    const orderProductsQuery = `SELECT * FROM order_product WHERE orderId = (?)`;
+    const orderProductsQuery = `
+      SELECT op.*, p.*
+      FROM order_product op
+      JOIN products p ON op.productId = p.id
+      WHERE op.orderId = ?
+    `;
 
     const [orderProducts] = await db.execute(orderProductsQuery, [order.id]);
-    const cartItems = [];
 
-    for (const orderProduct of orderProducts) {
-      const product = await Product.findById(orderProduct.productId);
+    const cartItems = orderProducts.map((orderProduct) => {
+      const product = new Product(orderProduct);
 
-      const cartItem = {
+      return {
         product,
         quantity: orderProduct.quantity,
         totalPrice: +orderProduct.total_price,
       };
+    });
 
-      cartItems.push(cartItem);
-    }
     // productDATA SCHEMA:
     // const productData = {
     //   items: [
@@ -102,7 +110,13 @@ class Order {
       totalPrice: +order.total_price,
     };
 
-    return new Order(productData, userData, order.status, order.date, order.id);
+    return new Order(
+      productData,
+      userAddressData,
+      order.status,
+      order.date,
+      order.id
+    );
   }
 
   static async transformOrders(orders) {
