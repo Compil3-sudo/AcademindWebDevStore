@@ -36,7 +36,8 @@ class Cart {
 
     if (deletableCartItemProductIds.length > 0) {
       this.items = this.items.filter(function (item) {
-        return deletableCartItemProductIds.indexOf(item.product.id) < 0;
+        // return deletableCartItemProductIds.indexOf(item.product.id) < 0; // this was more complicated to understand
+        return !deletableCartItemProductIds.includes(item.product.id);
       });
     }
 
