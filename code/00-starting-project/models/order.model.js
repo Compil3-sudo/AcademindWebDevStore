@@ -128,9 +128,7 @@ class Order {
 
   static async findAll() {
     const [orders] = await db.query(`SELECT * FROM orders ORDER BY date DESC`);
-    console.log('FIND ALL ORDERS: ', orders);
-    // make sure this returds orders as objects of class Order
-    return orders;
+    return this.transformOrders(orders);
   }
 
   static async findAllForUser(userId) {
@@ -145,9 +143,7 @@ class Order {
   static async findById(orderId) {
     const query = `SELECT * FROM orders WHERE id = (?) LIMIT 1`;
     const [order] = await db.execute(query, [+orderId]);
-    console.log('FIND ORDER BY ID: ', order);
-    // make sure this returds orders as objects of class Order
-    return order[0];
+    return this.transformOrders(order[0]);
   }
 
   async save() {
