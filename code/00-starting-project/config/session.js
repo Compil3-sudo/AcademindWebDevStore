@@ -1,20 +1,14 @@
-const session = require("express-session");
-const MySQLStore = require("express-mysql-session")(session);
-require("dotenv").config();
+const session = require('express-session');
+const PgSession = require('connect-pg-simple')(session);
+require('dotenv').config();
 
-const options = {
-  host: "localhost",
-  port: 3306,
-  user: "root",
-  password: process.env.DB_PASSWORD,
-  database: "wdeshop",
-};
-
-const sessionStore = new MySQLStore(options);
+const sessionStore = new PgSession({
+  conString: `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_DATABASE}`,
+});
 
 function createSessionConfig() {
   return {
-    secret: "super-secret",
+    secret: 'super-secret',
     resave: false,
     saveUninitialized: false,
     store: sessionStore,

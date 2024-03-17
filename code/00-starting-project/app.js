@@ -57,17 +57,21 @@ app.use(notFoundMiddleware);
 
 app.use(errorHandlerMiddleware);
 
-db.getConnection()
+db.connect()
   .then((connection) => {
-    console.log('Connected to MySQL database');
+    console.log('Connected to PostgreSQL database');
     // Start listening for incoming requests
     const server = app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });
-    // Optionally, you can release the connection once the server starts listening
-    connection.release();
+    // Close the client
+    // db.end()
+    //   .then(() => console.log('Disconnected from PostgreSQL'))
+    //   .catch((err) =>
+    //     console.error('Error disconnecting from PostgreSQL', err)
+    //   );
   })
   .catch((err) => {
     // Handle database connection error
-    console.error('Error connecting to MySQL database:', err);
+    console.error('Error connecting to PostgreSQL database:', err);
   });
