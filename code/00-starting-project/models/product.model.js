@@ -16,8 +16,8 @@ class Product {
   }
 
   static async findById(productId) {
-    const [product] = await db.query(
-      `SELECT * FROM products WHERE id = (?) LIMIT 1`,
+    const { rows: product } = await db.query(
+      `SELECT * FROM products WHERE id = $1 LIMIT 1`,
       [productId]
     );
 
@@ -31,7 +31,7 @@ class Product {
 
   static async findAll() {
     const query = `SELECT * FROM products`;
-    const [products] = await db.query(query);
+    const { rows: products } = await db.query(query);
 
     return products.map((product) => {
       return new Product(product);
@@ -39,19 +39,17 @@ class Product {
   }
 
   static async findMultiple(ids) {
-    // get all products from MySQL products table
+    // get all products from PostgreSQL products table
     // where the id is in the array of ids
     if (ids.length === 0) {
       return [];
     }
-    const placeholders = ids.map(() => '?').join(',');
+    const placeholders = ids.map((_, index) => `$${index + 1}`).join(',');
     const query = `SELECT * FROM products WHERE id IN (${placeholders})`;
 
-    const [products] = await db.execute(query, ids);
+    const { rows: products } = await db.query(query, ids);
 
-    return products.map(function (productDocument) {
-      return new Product(productDocument);
-    });
+    return products.map((productDocument) => new Product(productDocument));
   }
 
   updateImageData() {
@@ -73,33 +71,33 @@ class Product {
 
       if (!this.image) {
         query = `
-          UPDATE products
-          SET title = (?),
-              summary = (?),
-              price = (?),
-              description = (?)
-          WHERE id = (?);
-          `;
+        UPDATE products
+        SET title = $1,
+            summary = $2,
+            price = $3,
+            description = $4
+        WHERE id = $5;
+        `;
         productData.pop(); // remove the image. it stays the same
       } else {
         query = `
-        UPDATE products
-        SET title = (?),
-            summary = (?),
-            price = (?),
-            description = (?),
-            image = (?)
-        WHERE id = (?);
-        `;
+      UPDATE products
+      SET title = $1,
+          summary = $2,
+          price = $3,
+          description = $4,
+          image = $5
+      WHERE id = $6;
+      `;
       }
 
-      productData.push(this.id); // productData did not contain the id, needed for MySQL
+      productData.push(this.id); // productData did not contain the id, needed for PostgreSQL
 
-      await db.execute(query, productData);
+      await db.query(query, productData);
     } else {
-      const query = `INSERT INTO products (title, summary, price, description, image) VALUES (?, ?, ?, ?, ?)`;
+      const query = `INSERT INTO products (title, summary, price, description, image) VALUES ($1, $2, $3, $4, $5)`;
 
-      await db.execute(query, productData);
+      await db.query(query, productData);
     }
   }
 
@@ -109,7 +107,7 @@ class Product {
   }
 
   async remove() {
-    return await db.query(`DELETE FROM products WHERE id = (?)`, [this.id]);
+    return await db.query(`DELETE FROM products WHERE id = $1`, [this.id]);
   }
 }
 
