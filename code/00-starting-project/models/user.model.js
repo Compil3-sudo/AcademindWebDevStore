@@ -29,11 +29,11 @@ class User {
 
   static async findById(userId) {
     const query = `
-      SELECT email, fullname, addressId
+      SELECT email, fullname, address_id
       FROM users 
       WHERE id = $1 LIMIT 1`;
     const { rows: result } = await db.query(query, [+userId]); // convert userId from string to INT
-    const user = { ...result.rows[0], id: userId };
+    const user = { ...result, id: userId };
     return user;
   }
 

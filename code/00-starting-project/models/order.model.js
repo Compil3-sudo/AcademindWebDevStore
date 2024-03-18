@@ -20,9 +20,9 @@ class Order {
   }
 
   static async transformOrderClass(order) {
-    // MySQL orders Schema (What I receive):
+    // PostgreSQL orders Schema (What I receive):
     // order.id
-    // order.userId
+    // order.user_id
     // order.date
     // order.status
     // order.total_quantity (total quantity of all the cart items)
@@ -39,13 +39,13 @@ class Order {
     //   },
     // };
     const userDataQuery = `
-      SELECT user.email, user.fullname AS name, address.*
-      FROM users user
-      JOIN addresses address ON user.addressId = address.id
-      WHERE user.id = (?)
+      SELECT u.email, u.fullname AS name, address.*
+      FROM users AS u
+      JOIN addresses AS address ON u.address_id = address.id
+      WHERE u.id = $1
       LIMIT 1
     `;
-    const [userData] = await db.execute(userDataQuery, [order.userId]);
+    const { rows: userData } = await db.query(userDataQuery, [order.user_id]);
 
     const userAddressData = {
       email: userData[0].email,
@@ -57,21 +57,22 @@ class Order {
       },
     };
 
-    // order_product MySQL schema:
+    // order_product PostgreSQL schema:
     // id
-    // orderId
-    // productId
+    // order_d
+    // product_d
     // quantity (quantity of a product from the cart)
     // single_price
     // total_price (single_price * quantity)
     const orderProductsQuery = `
       SELECT op.*, p.*
       FROM order_product op
-      JOIN products p ON op.productId = p.id
-      WHERE op.orderId = ?
+      JOIN products p ON op.product_id = p.id
+      WHERE op.order_id = $1
     `;
-
-    const [orderProducts] = await db.execute(orderProductsQuery, [order.id]);
+    const { rows: orderProducts } = await db.query(orderProductsQuery, [
+      order.id,
+    ]);
 
     const cartItems = orderProducts.map((orderProduct) => {
       const product = new Product(orderProduct);
@@ -127,13 +128,15 @@ class Order {
   }
 
   static async findAll() {
-    const [orders] = await db.query(`SELECT * FROM orders ORDER BY date DESC`);
+    const { rows: orders } = await db.query(
+      `SELECT * FROM orders ORDER BY date DESC`
+    );
     return this.transformOrders(orders);
   }
 
   static async findAllForUser(userId) {
-    const [orders] = await db.execute(
-      `SELECT * FROM orders WHERE userId = (?) ORDER BY date DESC`,
+    const { rows: orders } = await db.query(
+      `SELECT * FROM orders WHERE user_id = $1 ORDER BY date DESC`,
       [+userId]
     );
 
@@ -141,8 +144,8 @@ class Order {
   }
 
   static async findById(orderId) {
-    const query = `SELECT * FROM orders WHERE id = (?) LIMIT 1`;
-    const [order] = await db.execute(query, [+orderId]);
+    const query = `SELECT * FROM orders WHERE id = $1 LIMIT 1`;
+    const { rows: order } = await db.query(query, [+orderId]);
     // order is an array with only 1 order, because only 1 order can exist with that id
     // however transformOrders needs an array to map => send array
     const transformedOrder = await this.transformOrders(order); // returns array with 1 element
@@ -152,8 +155,8 @@ class Order {
   async save() {
     if (this.id) {
       // Update order - simplified: Only Admin can change Order status
-      const query = `UPDATE orders SET status = (?) WHERE id = (?)`;
-      await db.execute(query, [this.status, this.id]);
+      const query = `UPDATE orders SET status = $1 WHERE id = $2`;
+      await db.query(query, [this.status, this.id]);
     } else {
       // Create new Order
       const orderCart = this.productData;
@@ -167,11 +170,11 @@ class Order {
         orderCart.totalPrice,
       ];
 
-      const [orderResult] = await db.execute(
-        'INSERT INTO orders (userId, date, status, total_quantity, total_price) VALUES (?, ?, ?, ?, ?)',
+      const { rows: orderResult } = await db.query(
+        'INSERT INTO orders (user_id, date, status, total_quantity, total_price) VALUES ($1, $2, $3, $4, $5) RETURNING id',
         order
       );
-      const orderId = orderResult.insertId;
+      const orderId = orderResult[0].id;
 
       for (const item of orderCartItems) {
         // add each item from cart to the order_product table
@@ -183,8 +186,8 @@ class Order {
           item.totalPrice,
         ];
 
-        const [orderProductResult] = await db.execute(
-          'INSERT INTO order_product (orderId, productId, quantity, single_price, total_price) VALUES (?, ?, ?, ?, ?)',
+        await db.query(
+          'INSERT INTO order_product (order_id, product_id, quantity, single_price, total_price) VALUES ($1, $2, $3, $4, $5)',
           orderProduct
         );
       }
