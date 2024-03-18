@@ -2,7 +2,7 @@
   "name": "academindshop",
   "version": "1.0.0",
   "description": "E-commerce shop build with NodeJS and ExpressJS",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
