@@ -59,9 +59,7 @@ app.set('view engine', 'ejs');
 // app.use(errorHandlerMiddleware);
 
 // TESTING DEPLOYMENT
-app.get('/', (req, res) => {
-  res.status(200).json('Welcome, your app is working well');
-});
+app.get('/', (req, res) => res.send('Express on Vercel'));
 
 db.connect()
   .then((connection) => {
