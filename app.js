@@ -39,10 +39,11 @@ const ordersRoutes = require('./routes/orders.routes');
 
 app.use(expressSession(sessionConfig));
 app.use(csrf());
-app.use(addCsrfTokenMiddleware); // this distributes generated tokens to all other middleware / route handlers and views
 app.use(checkAuthStatusMiddleware);
 app.use(cartMiddleware);
 app.use(updateCartPrices);
+
+app.use(addCsrfTokenMiddleware); // this distributes generated tokens to all other middleware / route handlers and views
 
 app.use(baseRoutes);
 app.use(authRoutes);
