@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const db = require('./data/database');
 const csrf = require('csurf');
+require('dotenv').config();
 
 // Middlewares
 const addCsrfTokenMiddleware = require('./middlewares/csrf');
@@ -18,7 +19,7 @@ const createSessionConfig = require('./config/session');
 const sessionConfig = createSessionConfig();
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 
 app.use(express.static('public'));
 app.use('/products/assets', express.static('product-data'));
